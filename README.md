@@ -1,0 +1,1 @@
+# gma-sdk-native-icon-example
