@@ -5,33 +5,69 @@ import UIKit
 /// https://developers.google.com/admob/ios/test-ads
 private let nativeAdUnitID = "ca-app-pub-3940256099942544/3986624511"
 
+/// ダミー記事の間にネイティブ広告を挟んで表示する feed 風の画面
 final class NativeAdViewController: UIViewController {
+    private enum Row {
+        case article(FeedItem)
+        case ad
+    }
+
+    /// 広告を挿入する位置
+    private let adRowIndex = 2
+
+    private let articles: [FeedItem] = (1...10).map { index in
+        FeedItem(
+            title: "Article \(index): Lorem ipsum dolor sit amet",
+            subtitle: "Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore."
+        )
+    }
+
     private var adLoader: AdLoader?
     private var nativeAd: NativeAd?
+    private let tableView = UITableView(frame: .zero, style: .plain)
 
-    private let nativeAdView = NativeAdView()
-    private let headlineLabel = UILabel()
-    private let advertiserLabel = UILabel()
-    private let bodyLabel = UILabel()
-    private let adImageView = UIImageView()
-    private let callToActionButton = UIButton(type: .system)
-    private let attributionLabel = UILabel()
-    private let statusLabel = UILabel()
-    private let reloadButton = UIButton(type: .system)
+    private var rows: [Row] {
+        var rows = articles.map(Row.article)
+        if nativeAd != nil {
+            rows.insert(.ad, at: min(adRowIndex, rows.count))
+        }
+        return rows
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "GMA Native Ad Example"
         view.backgroundColor = .systemBackground
-        setupViews()
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "Reload Ad",
+            style: .plain,
+            target: self,
+            action: #selector(loadAd)
+        )
+
+        tableView.dataSource = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 120
+        tableView.register(ArticleCell.self, forCellReuseIdentifier: ArticleCell.reuseIdentifier)
+        tableView.register(NativeAdCell.self, forCellReuseIdentifier: NativeAdCell.reuseIdentifier)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tableView)
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+
         loadAd()
     }
 
     // MARK: - Ad loading
 
     @objc private func loadAd() {
-        statusLabel.text = "Loading..."
-        nativeAdView.isHidden = true
+        navigationItem.prompt = "Loading ad..."
+        nativeAd = nil
+        tableView.reloadData()
 
         let adLoader = AdLoader(
             adUnitID: nativeAdUnitID,
@@ -43,135 +79,34 @@ final class NativeAdViewController: UIViewController {
         adLoader.load(Request())
         self.adLoader = adLoader
     }
+}
 
-    private func render(nativeAd: NativeAd) {
-        self.nativeAd = nativeAd
+// MARK: - UITableViewDataSource
 
-        headlineLabel.text = nativeAd.headline
-        advertiserLabel.text = nativeAd.advertiser
-        advertiserLabel.isHidden = nativeAd.advertiser == nil
-        bodyLabel.text = nativeAd.body
-        bodyLabel.isHidden = nativeAd.body == nil
-        callToActionButton.setTitle(nativeAd.callToAction, for: .normal)
-        callToActionButton.isHidden = nativeAd.callToAction == nil
-        // タップは SDK 側で処理するため、ボタン自体の操作は無効にしておく
-        callToActionButton.isUserInteractionEnabled = false
-
-        updateAdImage(with: nativeAd)
-
-        nativeAdView.nativeAd = nativeAd
-        nativeAdView.isHidden = false
-        statusLabel.text = imageSourceDescription(for: nativeAd)
+extension NativeAdViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        rows.count
     }
 
-    /// 画像表示のフォールバックロジック:
-    /// 1. main 画像 (`images`) があれば main 画像を表示する
-    /// 2. main 画像がなければ icon 画像 (`icon`) を表示する
-    /// 3. どちらもなければ画像は表示しない
-    private func updateAdImage(with nativeAd: NativeAd) {
-        if let mainImage = nativeAd.images?.first?.image {
-            adImageView.image = mainImage
-            adImageView.isHidden = false
-        } else if let iconImage = nativeAd.icon?.image {
-            adImageView.image = iconImage
-            adImageView.isHidden = false
-        } else {
-            adImageView.image = nil
-            adImageView.isHidden = true
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch rows[indexPath.row] {
+        case .article(let item):
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: ArticleCell.reuseIdentifier,
+                for: indexPath
+            ) as! ArticleCell
+            cell.configure(with: item)
+            return cell
+        case .ad:
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: NativeAdCell.reuseIdentifier,
+                for: indexPath
+            ) as! NativeAdCell
+            if let nativeAd {
+                cell.configure(with: nativeAd)
+            }
+            return cell
         }
-    }
-
-    private func imageSourceDescription(for nativeAd: NativeAd) -> String {
-        if nativeAd.images?.first?.image != nil {
-            return "Displaying: main image"
-        } else if nativeAd.icon?.image != nil {
-            return "Displaying: icon image"
-        } else {
-            return "Displaying: no image"
-        }
-    }
-
-    // MARK: - Layout
-
-    private func setupViews() {
-        statusLabel.text = ""
-        statusLabel.font = .preferredFont(forTextStyle: .footnote)
-        statusLabel.textColor = .secondaryLabel
-        statusLabel.textAlignment = .center
-
-        reloadButton.setTitle("Reload Ad", for: .normal)
-        reloadButton.addTarget(self, action: #selector(loadAd), for: .touchUpInside)
-
-        attributionLabel.text = "Ad"
-        attributionLabel.font = .preferredFont(forTextStyle: .caption2)
-        attributionLabel.textColor = .white
-        attributionLabel.backgroundColor = .systemYellow
-        attributionLabel.textAlignment = .center
-        attributionLabel.layer.cornerRadius = 3
-        attributionLabel.clipsToBounds = true
-
-        headlineLabel.font = .preferredFont(forTextStyle: .headline)
-        headlineLabel.numberOfLines = 2
-
-        advertiserLabel.font = .preferredFont(forTextStyle: .subheadline)
-        advertiserLabel.textColor = .secondaryLabel
-
-        bodyLabel.font = .preferredFont(forTextStyle: .body)
-        bodyLabel.numberOfLines = 3
-
-        adImageView.contentMode = .scaleAspectFit
-        adImageView.clipsToBounds = true
-
-        callToActionButton.backgroundColor = .systemBlue
-        callToActionButton.setTitleColor(.white, for: .normal)
-        callToActionButton.layer.cornerRadius = 8
-        callToActionButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
-
-        let adContentStack = UIStackView(arrangedSubviews: [
-            attributionLabel,
-            headlineLabel,
-            advertiserLabel,
-            adImageView,
-            bodyLabel,
-            callToActionButton,
-        ])
-        adContentStack.axis = .vertical
-        adContentStack.spacing = 8
-        adContentStack.alignment = .fill
-        adContentStack.translatesAutoresizingMaskIntoConstraints = false
-
-        nativeAdView.addSubview(adContentStack)
-        nativeAdView.layer.borderColor = UIColor.separator.cgColor
-        nativeAdView.layer.borderWidth = 1
-        nativeAdView.layer.cornerRadius = 12
-        nativeAdView.isHidden = true
-
-        // NativeAdView にアセットビューを登録する
-        nativeAdView.headlineView = headlineLabel
-        nativeAdView.advertiserView = advertiserLabel
-        nativeAdView.bodyView = bodyLabel
-        nativeAdView.imageView = adImageView
-        nativeAdView.callToActionView = callToActionButton
-
-        let rootStack = UIStackView(arrangedSubviews: [statusLabel, nativeAdView, reloadButton])
-        rootStack.axis = .vertical
-        rootStack.spacing = 16
-        rootStack.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(rootStack)
-
-        NSLayoutConstraint.activate([
-            adContentStack.topAnchor.constraint(equalTo: nativeAdView.topAnchor, constant: 12),
-            adContentStack.leadingAnchor.constraint(equalTo: nativeAdView.leadingAnchor, constant: 12),
-            adContentStack.trailingAnchor.constraint(equalTo: nativeAdView.trailingAnchor, constant: -12),
-            adContentStack.bottomAnchor.constraint(equalTo: nativeAdView.bottomAnchor, constant: -12),
-
-            attributionLabel.widthAnchor.constraint(equalToConstant: 32),
-            adImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 240),
-
-            rootStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            rootStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            rootStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-        ])
     }
 }
 
@@ -179,10 +114,12 @@ final class NativeAdViewController: UIViewController {
 
 extension NativeAdViewController: NativeAdLoaderDelegate {
     func adLoader(_ adLoader: AdLoader, didReceive nativeAd: NativeAd) {
-        render(nativeAd: nativeAd)
+        self.nativeAd = nativeAd
+        navigationItem.prompt = NativeAdCell.imageSourceDescription(for: nativeAd)
+        tableView.reloadData()
     }
 
     func adLoader(_ adLoader: AdLoader, didFailToReceiveAdWithError error: Error) {
-        statusLabel.text = "Failed to load ad: \(error.localizedDescription)"
+        navigationItem.prompt = "Failed to load ad: \(error.localizedDescription)"
     }
 }

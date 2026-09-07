@@ -1,14 +1,15 @@
 # iOS Example
 
 Google Mobile Ads SDK と FluctSDK GMA アダプターを利用してネイティブ広告を表示するサンプルアプリです。
+ダミー記事の間にネイティブ広告を挟んだ feed 風レイアウトで、広告セルの左側が画像スペースになっています。
 
 ## 画像表示のロジック
 
-ネイティブ広告の画像は以下のロジックで表示します（`NativeAdViewController.updateAdImage(with:)`）。
+広告セル左側の画像スペースは以下のロジックで表示します（`NativeAdCell.updateAdImage(with:)`）。
 
 1. main 画像（`NativeAd.images`）があれば main 画像を表示する
 2. main 画像がなければ icon 画像（`NativeAd.icon`）を表示する
-3. どちらもなければ画像は表示しない
+3. どちらもなければ画像は表示しない（テキストが全幅に広がる）
 
 ## 依存関係
 
