@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GMA Native Icon Example</string>
+    <string name="load_ad">Load Ad</string>
+    <string name="ad_attribution">Ad</string>
+    <!-- Sample native ad unit ID provided by Google -->
+    <string name="native_ad_unit_id" translatable="false">ca-app-pub-3940256099942544/2247696110</string>
+</resources>
