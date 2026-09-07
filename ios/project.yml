@@ -1,0 +1,46 @@
+name: GMANativeIconExample
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "16.0"
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    from: "13.0.0"
+  GoogleMobileAdsFluctAdapter:
+    url: https://github.com/voyagegroup/googleads-mobile-ios-mediation-fluct
+    from: "6.44.3"
+targets:
+  GMANativeIconExample:
+    type: application
+    platform: iOS
+    sources:
+      - GMANativeIconExample
+    dependencies:
+      - package: GoogleMobileAds
+        product: GoogleMobileAds
+      - package: GoogleMobileAdsFluctAdapter
+        product: GoogleMobileAdsFluctAdapter
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        OTHER_LDFLAGS: "$(inherited) -ObjC"
+    info:
+      path: GMANativeIconExample/Info.plist
+      properties:
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default Configuration
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+        # Google Mobile Ads SDK sample app ID
+        GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
+        SKAdNetworkItems:
+          - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
+schemes:
+  GMANativeIconExample:
+    build:
+      targets:
+        GMANativeIconExample: all
