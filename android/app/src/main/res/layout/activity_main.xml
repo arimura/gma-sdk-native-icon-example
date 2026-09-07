@@ -2,20 +2,45 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="#EEEEEE"
+    android:orientation="vertical">
 
     <Button
         android:id="@+id/load_ad_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_margin="8dp"
         android:text="@string/load_ad" />
 
-    <FrameLayout
-        android:id="@+id/ad_container"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include layout="@layout/feed_item" />
+
+            <include layout="@layout/feed_item" />
+
+            <!-- The native ad is inserted here as one row of the feed. -->
+            <FrameLayout
+                android:id="@+id/ad_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="1dp" />
+
+            <include layout="@layout/feed_item" />
+
+            <include layout="@layout/feed_item" />
+
+            <include layout="@layout/feed_item" />
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </LinearLayout>

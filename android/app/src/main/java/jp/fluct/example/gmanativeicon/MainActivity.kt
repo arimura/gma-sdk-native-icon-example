@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         bodyView.text = nativeAd.body
         adView.bodyView = bodyView
 
-        val callToActionView = adView.findViewById<Button>(R.id.ad_call_to_action)
+        val callToActionView = adView.findViewById<TextView>(R.id.ad_call_to_action)
         callToActionView.text = nativeAd.callToAction
         adView.callToActionView = callToActionView
 
@@ -90,12 +90,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * 画像アセットのフォールバック:
+     * feed行の左側の画像スペースに表示する画像アセットのフォールバック:
      * 1. main画像があればMediaViewで表示する
      * 2. main画像がなくicon画像があればiconを表示する
-     * 3. どちらもなければ画像は表示しない
+     * 3. どちらもなければ画像スペースごと表示しない
      */
     private fun bindImage(nativeAd: NativeAd, adView: NativeAdView) {
+        val imageContainer = adView.findViewById<FrameLayout>(R.id.ad_image_container)
         val mediaView = adView.findViewById<MediaView>(R.id.ad_media)
         val iconView = adView.findViewById<ImageView>(R.id.ad_icon)
 
@@ -104,17 +105,20 @@ class MainActivity : AppCompatActivity() {
 
         when {
             hasMainImage -> {
+                imageContainer.visibility = View.VISIBLE
                 mediaView.visibility = View.VISIBLE
                 iconView.visibility = View.GONE
                 adView.mediaView = mediaView
             }
             icon != null -> {
+                imageContainer.visibility = View.VISIBLE
                 mediaView.visibility = View.GONE
                 iconView.visibility = View.VISIBLE
                 iconView.setImageDrawable(icon.drawable)
                 adView.iconView = iconView
             }
             else -> {
+                imageContainer.visibility = View.GONE
                 mediaView.visibility = View.GONE
                 iconView.visibility = View.GONE
             }

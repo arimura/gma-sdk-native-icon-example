@@ -2,13 +2,18 @@
 
 Google Mobile Ads SDKとFluctSDK GMAアダプターを利用してネイティブ広告を表示するサンプルアプリです。
 
+## レイアウト
+
+feed風のレイアウトです。ダミー記事の行の間にネイティブ広告を1行として挿入します。
+各行は左が画像スペース、右がテキストの構成です。
+
 ## ネイティブ広告の画像表示ロジック
 
-`MainActivity.kt` の `bindImage` で以下のフォールバックを実装しています。
+広告行の左側の画像スペースについて、`MainActivity.kt` の `bindImage` で以下のフォールバックを実装しています。
 
 1. main画像（`NativeAd.getImages()`）があればMediaViewで表示する
 2. main画像がなくicon画像（`NativeAd.getIcon()`）があればiconを表示する
-3. どちらもなければ画像を表示しない
+3. どちらもなければ画像スペースごと表示しない
 
 ## 依存関係
 
