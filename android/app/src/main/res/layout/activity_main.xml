@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <Button
+        android:id="@+id/load_ad_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:text="Load Ad" />
+
+    <!--
+        feed内の1アイテムを想定したネイティブ広告の表示例
+
+        - 画面横幅いっぱいの横長領域に広告を表示する
+        - 左端の正方形領域に、main画像 (NativeAd.images) があればmain画像をMediaViewで、
+          なければicon (NativeAd.icon) をImageViewで表示する。どちらもなければ画像は表示しない
+        - main画像とiconを同一サイズの領域に表示する為、同じlayoutサイズのMediaViewと
+          ImageViewを重ねて配置し、どちらを表示するかはvisibilityで切り替える
+        - 右側にタイトル (headline) と広告主 (advertiser) を表示する
+    -->
+    <com.google.android.gms.ads.nativead.NativeAdView
+        android:id="@+id/native_ad_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="#F2F2F2"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <FrameLayout
+                android:id="@+id/image_container"
+                android:layout_width="80dp"
+                android:layout_height="80dp">
+
+                <com.google.android.gms.ads.nativead.MediaView
+                    android:id="@+id/media_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <ImageView
+                    android:id="@+id/icon_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitCenter" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/headline_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/advertiser_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:maxLines="1"
+                    android:textColor="#888888"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.gms.ads.nativead.NativeAdView>
+
+</LinearLayout>
