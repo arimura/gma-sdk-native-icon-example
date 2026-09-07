@@ -1,0 +1,13 @@
+# XcodeGen generates the project file; do not commit it
+*.xcodeproj
+*.xcworkspace
+
+# Xcode
+DerivedData/
+build/
+xcuserdata/
+
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved

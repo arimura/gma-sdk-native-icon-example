@@ -1,0 +1,48 @@
+name: iOS Build
+
+on:
+  push:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios-build.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios-build.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
+          xcodebuild -version
+
+      - name: Install XcodeGen and xcbeautify
+        run: brew install xcodegen xcbeautify
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Resolve Swift package dependencies
+        working-directory: ios
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project GMANativeIconExample.xcodeproj \
+            -scheme GMANativeIconExample
+
+      - name: Build
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project GMANativeIconExample.xcodeproj \
+            -scheme GMANativeIconExample \
+            -destination "generic/platform=iOS Simulator" \
+            CODE_SIGNING_ALLOWED=NO | xcbeautify --renderer github-actions

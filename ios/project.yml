@@ -1,0 +1,42 @@
+name: GMANativeIconExample
+options:
+  bundleIdPrefix: jp.fluct
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+
+packages:
+  GoogleMobileAdsFluctAdapter:
+    url: https://github.com/voyagegroup/googleads-mobile-ios-mediation-fluct
+    exactVersion: 6.44.3
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    majorVersion: 13.0.0
+
+targets:
+  GMANativeIconExample:
+    type: application
+    platform: iOS
+    sources:
+      - GMANativeIconExample
+    dependencies:
+      - package: GoogleMobileAdsFluctAdapter
+        product: GoogleMobileAdsFluctAdapter
+      - package: GoogleMobileAds
+        product: GoogleMobileAds
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: jp.fluct.GMANativeIconExample
+        INFOPLIST_FILE: GMANativeIconExample/Info.plist
+        # FluctSDK requires the -ObjC linker flag
+        OTHER_LDFLAGS: -ObjC
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.9"
+
+schemes:
+  GMANativeIconExample:
+    build:
+      targets:
+        GMANativeIconExample: all
+    run:
+      config: Debug
